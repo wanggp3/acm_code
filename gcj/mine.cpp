@@ -101,15 +101,6 @@ bool work(){
 		}
 		return true;
 	}
-	/*
-	if (r == 3 * m + 1){
-		rep(i, m) v[0][i] = v[1][i] = '.';
-		rep(i, m - 1) v[2][i] = '.';
-		rep(i, 2) v[3][i] = '.';
-		v[0][0] = 'c';
-		return true;
-	}
-	*/
 	if (r % m == 1){
 		int top = r / m + 1;
 		rep(i, top - 2){
