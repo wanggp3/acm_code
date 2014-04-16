@@ -1,3 +1,4 @@
+//label : graph
 //By myf
 //#pragma comment(linker, "/STACK:16777216")  //C++
 #include <cstdio>

@@ -1,3 +1,4 @@
+#label : number theory
 from fractions import gcd
 import sys
 fin = open("china.in", "r")
