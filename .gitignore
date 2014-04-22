@@ -6,4 +6,6 @@
 *.exe
 tmp.cpp
 makedata.cpp
+make_data.cpp
 test.cpp
+check.*
