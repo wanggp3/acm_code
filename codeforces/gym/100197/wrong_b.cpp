@@ -3,7 +3,6 @@
 //#pragma comment(linker, "/STACK:16777216")  //C++
 #include <cstdio>
 #include <assert.h>
-#include <limits>
 #include <iostream>
 #include <cstring>
 #include <algorithm>
@@ -40,56 +39,21 @@ typedef Point Vec;
 typedef pair<Point, Point> Line;
 //typedef complex<double> Comp;
 
-const int N = 64 + 1;
-const int M = 65 + 1;
+const int N = 128;
 const int MD = 1000000007;
-const LL INF = 0x3f3f3f3f3f3f3f3f;
+const int INF = 0x3f3f3f3f;
 const double PI = acos(-1.0);
 const double EPS = 1E-6;
 
 int n, m;
-string to_str[M];
-
-bool ok[N];
-stack<int> p[M];
 vector<string> ans;
+stack<int> p[N];
+string to_str[N];
 
-LL dp[N][M];
-int pre[N][N];
-
-LL dfs(int n, int m){
-	if (dp[n][m] != -1) return dp[n][m];
-	if (m == 1) return dp[n][m] = INF;
-	if (n == 1) return dp[n][m] = 1;
-	dp[n][m] = INF;
-	for(int i = 1; i < n; i++){
-		if (dfs(i, m) >= INF) continue;
-		if (dfs(n - i, m - 1) >= INF) continue;
-		if (dp[i][m] * 2 + dp[n - i][m - 1] < dp[n][m]){
-			dp[n][m] = dp[i][m] * 2 + dp[n - i][m - 1];
-			pre[n][m] = i;
-		}
-	}
-	return dp[n][m];
-}
-
-void init(){
-	for(int i = 0; i < 10; i++){
-		to_str[i] = "";
-		to_str[i].insert(to_str[i].begin(), i + '0');
-	}
-	for(int i = 10; i < 66; i++){
-		to_str[i] = to_str[i / 10] + to_str[i % 10];
-	}
-	rep(i, N){
-		rep(j, M){
-			dp[i][j] = -1;
-		}
-	}
-}
+LL v[N];
 
 string go(int st, int ed){
-	//cout << st << ' ' << ed << endl;
+//	cout << st << ' ' << ed << endl;
 	assert(st >= 1 && st <= m);
 	assert(ed >= 1 && ed <= m);
 	assert(!p[st].empty());
@@ -100,47 +64,81 @@ string go(int st, int ed){
 	if (!p[ed].empty()){
 		ret += " atop " + to_str[p[ed].top()];
 	}
-	p[ed].push(id);
+//	p[ed].push(id);
 //	cout << ret << endl;
+//	cout << st << ' ' << ed << endl;
 	return ret;
 }
 
-void move(int num, int cnt, int st, int ed){
+void move(int num, int st, int ed, int cnt){
+	//if (v[num] != -1) return ;
+	v[num] = 0;
 	if (num <= 0) return;
-	//cout << num << ' ' << cnt << ' ' << st << ' ' << ed << endl;
 	if (num == 1){
+		v[num] = 1;
 		ans.PB(go(st, ed));
 		return;
 	}
-	vector<int> tmp;
-	for(int i = 1; i <= m; i++){
-		if (i == st || i == ed || !ok[i]) continue;
-		tmp.push_back(i);
+//#define OUT_ALL
+#ifdef OUT_ALL
+	cout << num << ' ' << st << ' ' << ed << ' '  << cnt << ' ' << "in" << endl;
+#endif
+	int move_out = min(cnt - 2, num - 1);
+	int count = move_out - (cnt - 2), base = num - move_out;
+	//cout << move_out << ' ' << count << ' ' << base << endl;
+	//cout << count << endl;
+	for(int i = 1; i <= cnt; i++){
+		if (i == st || i == ed) continue;
+		if (count == 0){
+			v[num] += v[base];
+			move(base, st, i, cnt);
+		}
+		else if (count > 0){
+			v[num]++;
+			ans.PB(go(st, i));
+		}
+		count++;
 	}
-	int pos = pre[num][cnt];
-	move(pos, cnt, st, tmp[0]);
-	ok[tmp[0]] = false;
-	move(num - pos, cnt - 1, st, ed);
-	ok[tmp[0]] = true;
-	move(pos, cnt, tmp[0], ed);
+	v[num]++;
+	ans.PB(go(st, ed));
+	for(int i = cnt; i >= 1; i--){
+		if (i == st || i == ed) continue;
+		//cout << i << ' ' << count << endl;
+		if (count == 1){
+			v[num] += v[base];
+			move(base, i, ed, cnt);
+		}
+		else if (count > 1){
+			v[num]++;
+			ans.PB(go(i, ed));
+		}
+		count--;
+	}
+#ifdef OUT_ALL
+	cout << num << ' ' << st << ' ' << ed << ' '  << cnt << ' ' << "out" << endl;
+#endif
 }
 
 int main(){
-	freopen("hanoi.in", "r", stdin);
-	freopen("hanoi.out", "w", stdout);
+	//freopen("b.in", "r", stdin);
+//	freopen("hanoi.in", "r", stdin);
+//	freopen("hanoi.out", "w", stdout);
+	for(int i = 0; i < 10; i++){
+		to_str[i] = "";
+		to_str[i].insert(to_str[i].begin(), i + '0');
+	}
+	for(int i = 10; i < 66; i++){
+		to_str[i] = to_str[i / 10] + to_str[i % 10];
+	}
 	std::ios::sync_with_stdio(false);
-	init();
 	while(cin >> n >> m){
-		dfs(n, m);
 		rep(i, m) while(!p[i + 1].empty()) p[i + 1].pop();
 		for(int i = n; i >= 1; i--) p[1].push(i);
-		for(int i = 1; i <= n; i++) ok[i] = true;
-		ans.clear();
-		move(n, m, 1, m); 
+		move(n, 1, m, m); 
 		cout << ans.size() << endl;
-		rep(i, ans.size()){
-			cout << ans[i] << endl;
-		}
+	//	rep(i, ans.size()){
+	//		cout << ans[i] << endl;
+	//	}
 	}
 	return 0;
 }
